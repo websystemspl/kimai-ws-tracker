@@ -131,5 +131,8 @@
   },
   "chooseActivity": {
     "message": "+ rodzaj pracy"
+  },
+  "errNoPermission": {
+    "message": "Bez zgody na dostęp do tego adresu dodatek nie połączy się z Kimai."
   }
 }

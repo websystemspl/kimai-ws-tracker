@@ -85,9 +85,17 @@ options/              ustawienia
 _locales/pl, /en      teksty
 ```
 
+## Uprawnienia
+
+Dodatek nie ma z góry wpisanego adresu żadnego serwera. Przy zapisie ustawień
+prosi o dostęp do tego adresu, który podałeś - i tylko do niego. Zgody udzielasz
+w okienku Chrome, można ją cofnąć w `chrome://extensions`.
+
+Poza tym używa `storage` (ustawienia i ostatni wybór) oraz `alarms` (odświeżanie
+plakietki z czasem). Żadnych innych uprawnień, żadnej telemetrii.
+
 ## Ograniczenia
 
-- `host_permissions` obejmuje tylko `https://kimai.web-systems.pl`. Dla innej
-  instancji trzeba dopisać jej adres w `manifest.json`.
-- Instalacja z pliku - Chrome przy każdym starcie pokaże ostrzeżenie o trybie
-  dewelopera. Zniknie dopiero po opublikowaniu dodatku w sklepie.
+- Instalacja z pliku - Chrome przy każdym starcie pokazuje ostrzeżenie o trybie
+  dewelopera. Znika po zainstalowaniu wersji ze sklepu.
+- Firefox wczytany przez `about:debugging` znika po restarcie przeglądarki.

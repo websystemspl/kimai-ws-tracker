@@ -4,8 +4,13 @@
   "version": "1.0.0",
   "description": "__MSG_extDescription__",
   "default_locale": "pl",
-  "permissions": ["storage", "alarms"],
-  "host_permissions": ["https://kimai.web-systems.pl/*"],
+  "permissions": [
+    "storage",
+    "alarms"
+  ],
+  "optional_host_permissions": [
+    "https://*/*"
+  ],
   "action": {
     "default_popup": "popup/popup.html",
     "default_icon": {

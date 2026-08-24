@@ -1,4 +1,4 @@
-import { api, ApiError, getSettings } from '../lib/api.js';
+import { api, ApiError, getSettings, hasHostAccess, requestHostAccess } from '../lib/api.js';
 import { applyI18n, initI18n, t } from '../lib/i18n.js';
 
 const el = (id) => document.getElementById(id);
@@ -38,7 +38,14 @@ function status(message, bad = false) {
 }
 
 async function save() {
-  settings = readForm();
+  const form = readForm();
+  if (form.url && !(await hasHostAccess(form.url))) {
+    const granted = await requestHostAccess(form.url);
+    if (!granted) {
+      return status(t('errNoPermission'), true);
+    }
+  }
+  settings = form;
   await chrome.storage.sync.set(settings);
   status(t('optSaved'));
   await initI18n(settings.language);
@@ -46,8 +53,12 @@ async function save() {
 }
 
 async function test() {
+  const form = readForm();
   try {
-    const me = await api.me(readForm());
+    if (form.url && !(await hasHostAccess(form.url)) && !(await requestHostAccess(form.url))) {
+      return status(t('errNoPermission'), true);
+    }
+    const me = await api.me(form);
     status(t('optTestOk', me.alias || me.username));
   } catch (error) {
     const reason = error instanceof ApiError && (error.status === 401 || error.status === 403)

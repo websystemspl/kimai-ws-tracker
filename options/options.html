@@ -1,0 +1,40 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1 data-i18n="optTitle"></h1>
+
+    <label for="url" data-i18n="optUrl"></label>
+    <input id="url" type="url" placeholder="https://kimai.web-systems.pl">
+    <p class="hint" data-i18n="optUrlHint"></p>
+
+    <label for="token" data-i18n="optToken"></label>
+    <input id="token" type="password" autocomplete="off" spellcheck="false">
+    <p class="hint" data-i18n="optTokenHint"></p>
+
+    <label for="language" data-i18n="optLang"></label>
+    <select id="language">
+      <option value="auto" data-i18n="optLangAuto"></option>
+      <option value="pl" data-i18n="optLangPl"></option>
+      <option value="en" data-i18n="optLangEn"></option>
+    </select>
+    <p class="hint" data-i18n="optLangNote"></p>
+
+    <label for="minDescription" data-i18n="optMinDesc"></label>
+    <input id="minDescription" type="number" min="0" max="120" step="1">
+    <p class="hint" data-i18n="optMinDescHint"></p>
+
+    <div class="row">
+      <button id="save" class="primary" data-i18n="optSave" type="button"></button>
+      <button id="test" data-i18n="optTest" type="button"></button>
+    </div>
+
+    <p id="status" class="status" hidden></p>
+  </main>
+  <script type="module" src="options.js"></script>
+</body>
+</html>

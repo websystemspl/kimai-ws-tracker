@@ -1,0 +1,135 @@
+{
+  "extName": {
+    "message": "Kimai time tracking (Web Systems)"
+  },
+  "extDescription": {
+    "message": "Start, stop and resume Kimai time entries straight from the browser."
+  },
+  "settings": {
+    "message": "Settings"
+  },
+  "notConfigured": {
+    "message": "The add-on is not configured yet."
+  },
+  "openSettings": {
+    "message": "Open settings"
+  },
+  "stop": {
+    "message": "Stop"
+  },
+  "start": {
+    "message": "Start"
+  },
+  "recent": {
+    "message": "Recent entries"
+  },
+  "resume": {
+    "message": "Resume"
+  },
+  "errNoProject": {
+    "message": "Pick a project."
+  },
+  "errNoActivity": {
+    "message": "Pick a type of work."
+  },
+  "errDescShort": {
+    "message": "The description is too short - write at least $CHARS$ characters.",
+    "placeholders": {
+      "chars": {
+        "content": "$1"
+      }
+    }
+  },
+  "errDescGeneric": {
+    "message": "\"$WORD$\" tells the client nothing. Write what you are actually doing.",
+    "placeholders": {
+      "word": {
+        "content": "$1"
+      }
+    }
+  },
+  "errConnection": {
+    "message": "Cannot reach Kimai."
+  },
+  "errAuth": {
+    "message": "Token rejected. Check it in the settings."
+  },
+  "errServer": {
+    "message": "Kimai returned an error: $CODE$",
+    "placeholders": {
+      "code": {
+        "content": "$1"
+      }
+    }
+  },
+  "optTitle": {
+    "message": "Kimai add-on settings"
+  },
+  "optUrl": {
+    "message": "Kimai address"
+  },
+  "optUrlHint": {
+    "message": "For example https://kimai.web-systems.pl"
+  },
+  "optToken": {
+    "message": "API token"
+  },
+  "optTokenHint": {
+    "message": "Kimai panel: Profile > API. The token is not your login password."
+  },
+  "optLang": {
+    "message": "Add-on language"
+  },
+  "optLangAuto": {
+    "message": "Follow the browser"
+  },
+  "optLangPl": {
+    "message": "Polish"
+  },
+  "optLangEn": {
+    "message": "English"
+  },
+  "optMinDesc": {
+    "message": "Minimum description length (characters)"
+  },
+  "optMinDescHint": {
+    "message": "0 turns the check off. 15 is a good default."
+  },
+  "optSave": {
+    "message": "Save"
+  },
+  "optTest": {
+    "message": "Test connection"
+  },
+  "optSaved": {
+    "message": "Saved."
+  },
+  "optTestOk": {
+    "message": "Connected as $USER$.",
+    "placeholders": {
+      "user": {
+        "content": "$1"
+      }
+    }
+  },
+  "optTestFail": {
+    "message": "Could not connect: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "optLangNote": {
+    "message": "The language change applies next time you open the add-on window."
+  },
+  "descriptionPlaceholder": {
+    "message": "What are you working on?"
+  },
+  "chooseProject": {
+    "message": "+ project"
+  },
+  "chooseActivity": {
+    "message": "+ type of work"
+  }
+}

@@ -1,0 +1,135 @@
+{
+  "extName": {
+    "message": "Kimai - pomiar czasu (Web Systems)"
+  },
+  "extDescription": {
+    "message": "Start, stop i wznawianie pomiaru czasu w Kimai prosto z przeglądarki."
+  },
+  "settings": {
+    "message": "Ustawienia"
+  },
+  "notConfigured": {
+    "message": "Dodatek nie jest jeszcze skonfigurowany."
+  },
+  "openSettings": {
+    "message": "Otwórz ustawienia"
+  },
+  "stop": {
+    "message": "Zatrzymaj"
+  },
+  "start": {
+    "message": "Rozpocznij"
+  },
+  "recent": {
+    "message": "Ostatnie wpisy"
+  },
+  "resume": {
+    "message": "Wznów"
+  },
+  "errNoProject": {
+    "message": "Wybierz projekt."
+  },
+  "errNoActivity": {
+    "message": "Wybierz rodzaj pracy."
+  },
+  "errDescShort": {
+    "message": "Opis jest za krótki - napisz co najmniej $CHARS$ znaków.",
+    "placeholders": {
+      "chars": {
+        "content": "$1"
+      }
+    }
+  },
+  "errDescGeneric": {
+    "message": "„$WORD$\" nic nie mówi klientowi. Napisz, co konkretnie robisz.",
+    "placeholders": {
+      "word": {
+        "content": "$1"
+      }
+    }
+  },
+  "errConnection": {
+    "message": "Brak połączenia z Kimai."
+  },
+  "errAuth": {
+    "message": "Token odrzucony. Sprawdź go w ustawieniach."
+  },
+  "errServer": {
+    "message": "Kimai zwrócił błąd: $CODE$",
+    "placeholders": {
+      "code": {
+        "content": "$1"
+      }
+    }
+  },
+  "optTitle": {
+    "message": "Ustawienia dodatku Kimai"
+  },
+  "optUrl": {
+    "message": "Adres Kimai"
+  },
+  "optUrlHint": {
+    "message": "Na przykład https://kimai.web-systems.pl"
+  },
+  "optToken": {
+    "message": "Token API"
+  },
+  "optTokenHint": {
+    "message": "Panel Kimai: Profil > API. Token to nie jest hasło do logowania."
+  },
+  "optLang": {
+    "message": "Język dodatku"
+  },
+  "optLangAuto": {
+    "message": "Jak w przeglądarce"
+  },
+  "optLangPl": {
+    "message": "Polski"
+  },
+  "optLangEn": {
+    "message": "Angielski"
+  },
+  "optMinDesc": {
+    "message": "Minimalna długość opisu (znaki)"
+  },
+  "optMinDescHint": {
+    "message": "0 wyłącza sprawdzanie. Zalecane 15."
+  },
+  "optSave": {
+    "message": "Zapisz"
+  },
+  "optTest": {
+    "message": "Sprawdź połączenie"
+  },
+  "optSaved": {
+    "message": "Zapisano."
+  },
+  "optTestOk": {
+    "message": "Połączono jako $USER$.",
+    "placeholders": {
+      "user": {
+        "content": "$1"
+      }
+    }
+  },
+  "optTestFail": {
+    "message": "Nie udało się połączyć: $ERR$",
+    "placeholders": {
+      "err": {
+        "content": "$1"
+      }
+    }
+  },
+  "optLangNote": {
+    "message": "Zmiana języka zadziała po ponownym otwarciu okna dodatku."
+  },
+  "descriptionPlaceholder": {
+    "message": "Co robisz?"
+  },
+  "chooseProject": {
+    "message": "+ projekt"
+  },
+  "chooseActivity": {
+    "message": "+ rodzaj pracy"
+  }
+}

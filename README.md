@@ -21,9 +21,14 @@ Dodatek nie jest w sklepie, więc instaluje się go z pliku.
 
 **Chrome / Edge / Brave**
 
-1. `chrome://extensions`
-2. Włącz „Tryb dewelopera" (przełącznik w prawym górnym rogu).
-3. „Załaduj rozpakowane" i wskaż ten katalog.
+1. **Rozpakuj ZIP** gdzieś na stałe. Chrome nie wczytuje archiwów - wskazanie pliku
+   `.zip` kończy się błędem „Brak pliku manifestu lub nie można go odczytać".
+2. `chrome://extensions`
+3. Włącz „Tryb dewelopera" (przełącznik w prawym górnym rogu).
+4. „Załaduj rozpakowane" i wskaż **rozpakowany katalog**. Wejdź do jego środka i dopiero
+   tam kliknij „Otwórz" - `manifest.json` musi leżeć bezpośrednio w wybranym katalogu.
+
+Rozpakowanego katalogu nie kasuj, Chrome wczytuje z niego pliki przy każdym starcie.
 
 **Firefox** (do testów, znika po restarcie)
 

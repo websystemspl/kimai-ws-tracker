@@ -14,6 +14,7 @@ for Kimai", którego licencja zabrania modyfikacji i dystrybucji dzieł pochodny
 - **Nowoczesne uwierzytelnianie** tokenem Bearer. Alternatywny „Kimai for Chrome"
   używa przestarzałego `X-AUTH`, ograniczanego w Kimai 2.65 rate-limiterem.
 - Projekty pogrupowane po kliencie, więc lista 74 pozycji da się przejść.
+- **Przełącznik „płatne dla klienta"** przy projekcie i rodzaju pracy, jak w Toggl.
 
 ## Instalacja
 
@@ -58,8 +59,25 @@ Ikona pokazuje na plakietce, ile trwa bieżący pomiar. Kliknięcie otwiera okno
 - **gdy nic nie mierzysz** - wybierasz projekt, rodzaj pracy, wpisujesz co robisz,
   klikasz „Rozpocznij". Ostatni projekt i rodzaj pracy są zapamiętywane.
 - **gdy pomiar trwa** - widzisz co i od kiedy, klikasz „Zatrzymaj".
-- **„Ostatnie wpisy"** - „Wznów" przepisuje projekt, rodzaj pracy i opis do formularza,
-  żeby dało się kontynuować bez klikania od nowa.
+- **„Ostatnie wpisy"** - „Wznów" przepisuje projekt, rodzaj pracy, opis i znacznik
+  płatności do formularza, żeby dało się kontynuować bez klikania od nowa.
+
+## Płatne dla klienta
+
+Obok wyboru projektu i rodzaju pracy jest przełącznik ze znakiem waluty - to samo,
+co pole „Płatne" w Kimai i przycisk „$" w Toggl.
+
+- **zielony** - godziny idą klientowi na fakturę,
+- **szary, przekreślony** - czas wewnętrzny, nie do rozliczenia.
+
+Domyślnie ustawia się tak, jak wynika z Kimai: klient, projekt i rodzaj pracy mają
+własny znacznik „Płatne", a wyłączenie któregokolwiek z nich robi wpis niepłatnym.
+Przełącznik zmienia to dla jednego wpisu i wraca do domyślnego po zmianie projektu.
+Nietkniętego dodatek nie wysyła w ogóle - wtedy decyduje sama instancja Kimai.
+
+Podczas trwającego pomiaru przełącznik tylko pokazuje stan wpisu. Żeby go zmienić
+po fakcie, edytuje się wpis w panelu Kimai. Wpisy niepłatne mają na liście ostatnich
+szarą etykietę „niepłatne".
 
 ## O opisach
 
@@ -98,6 +116,14 @@ w okienku Chrome, można ją cofnąć w `chrome://extensions`.
 
 Poza tym używa `storage` (ustawienia i ostatni wybór) oraz `alarms` (odświeżanie
 plakietki z czasem). Żadnych innych uprawnień, żadnej telemetrii.
+
+## Historia zmian
+
+- **1.1.0** - przełącznik „płatne dla klienta" przy pomiarze, etykieta wpisów
+  niepłatnych na liście ostatnich, „Wznów" przenosi też znacznik płatności.
+  Poprawka: po zatrzymaniu pomiaru lista rodzajów pracy odbudowuje się dla wybranego
+  projektu, więc następny wpis da się wystartować bez klikania projektu od nowa.
+- **1.0.0** - pierwsze wydanie.
 
 ## Ograniczenia
 

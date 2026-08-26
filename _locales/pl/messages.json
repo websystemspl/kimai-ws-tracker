@@ -132,6 +132,27 @@
   "chooseActivity": {
     "message": "+ rodzaj pracy"
   },
+  "billableOn": {
+    "message": "Płatne dla klienta - kliknij, żeby nie liczyć tego czasu do faktury"
+  },
+  "billableOff": {
+    "message": "Niepłatne (wewnętrzne) - kliknij, żeby policzyć ten czas klientowi"
+  },
+  "billableChipOn": {
+    "message": "płatne"
+  },
+  "billableChipOff": {
+    "message": "niepłatne"
+  },
+  "billableStateOn": {
+    "message": "Płatne dla klienta"
+  },
+  "billableStateOff": {
+    "message": "Niepłatne (wewnętrzne)"
+  },
+  "billableShortOff": {
+    "message": "niepłatne"
+  },
   "errNoPermission": {
     "message": "Bez zgody na dostęp do tego adresu dodatek nie połączy się z Kimai."
   }

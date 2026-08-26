@@ -7,6 +7,10 @@ const el = (id) => document.getElementById(id);
 let settings;
 let running = null;
 let clockTimer = null;
+// Whether the entry about to start goes on the client's invoice, and whether the
+// user said so themselves - an untouched value is left to Kimai to decide.
+let billable = true;
+let billableTouched = false;
 
 init();
 
@@ -19,7 +23,8 @@ async function init() {
   el('goSettings').addEventListener('click', openOptions);
   el('toggle').addEventListener('click', onToggle);
   el('project').addEventListener('change', onProjectChange);
-  el('activity').addEventListener('change', () => markChosen(el('activity')));
+  el('activity').addEventListener('change', onActivityChange);
+  el('billable').addEventListener('click', onBillableClick);
 
   const description = el('description');
   description.addEventListener('input', () => {
@@ -87,7 +92,7 @@ async function render() {
     running = active[0] || null;
     show('tracker', 'recentPanel');
     await fillPickers();
-    running ? enterRunningState() : enterIdleState();
+    running ? enterRunningState() : await enterIdleState();
     await renderRecent();
   } catch (error) {
     show('tracker');
@@ -117,11 +122,15 @@ function enterRunningState() {
   toggle.disabled = false;
   toggle.setAttribute('aria-label', t('stop'));
 
+  billable = running.billable !== false;
+  billableTouched = false;
+  renderBillable();
+
   el('clock').hidden = false;
   startClock(new Date(running.begin).getTime());
 }
 
-function enterIdleState() {
+async function enterIdleState() {
   stopClock();
   const description = el('description');
   description.readOnly = false;
@@ -134,10 +143,60 @@ function enterIdleState() {
   el('dot').hidden = true;
   el('clock').hidden = true;
 
+  // While an entry runs, the activity picker only holds the label of that entry.
+  // Rebuild the real list for the project still selected, otherwise starting the
+  // next entry fails on "pick a type of work" with nothing to pick.
+  if (!el('activity').querySelector('option[value]:not([value=""])')) {
+    await onProjectChange();
+    await restoreLastActivity();
+  }
+
   const toggle = el('toggle');
   toggle.classList.replace('stop', 'start');
   toggle.disabled = false;
   toggle.setAttribute('aria-label', t('start'));
+
+  // Coming back from a stopped entry, fall back to what the project implies.
+  if (!billableTouched) {
+    billable = billableDefault();
+  }
+  renderBillable();
+}
+
+// --- billable switch -------------------------------------------------------
+
+function renderBillable() {
+  const button = el('billable');
+  const label = running
+    ? t(billable ? 'billableStateOn' : 'billableStateOff')
+    : t(billable ? 'billableOn' : 'billableOff');
+  el('billableLabel').textContent = billable ? t('billableChipOn') : t('billableChipOff');
+  button.classList.toggle('on', billable);
+  button.setAttribute('aria-pressed', String(billable));
+  button.setAttribute('aria-label', label);
+  button.title = label;
+  button.disabled = Boolean(running);
+}
+
+/** Mirrors Kimai: billable unless the customer, project or activity says otherwise. */
+function billableDefault() {
+  const flagOf = (id) => el(id).selectedOptions[0]?.dataset.billable;
+  return flagOf('project') !== 'false' && flagOf('activity') !== 'false';
+}
+
+function resetBillable() {
+  billable = billableDefault();
+  billableTouched = false;
+  renderBillable();
+}
+
+function onBillableClick() {
+  if (running) {
+    return;
+  }
+  billable = !billable;
+  billableTouched = true;
+  renderBillable();
 }
 
 function startClock(startedAt) {
@@ -160,7 +219,15 @@ async function fillPickers() {
   if (select.options.length > 1) {
     return; // already built for this popup session
   }
-  const projects = await api.projects(settings);
+  // Customers are fetched alongside because a non-billable customer makes every
+  // project underneath it non-billable, and the project list only carries an id.
+  const [projects, customers] = await Promise.all([
+    api.projects(settings),
+    api.customers(settings).catch(() => []),
+  ]);
+  const unbilledCustomers = new Set(
+    customers.filter((customer) => !customer.billable).map((customer) => customer.id),
+  );
 
   // Group by customer, otherwise a 74-entry flat list is unusable.
   const byCustomer = new Map();
@@ -181,6 +248,9 @@ async function fillPickers() {
       .forEach((project) => {
         const option = new Option(project.name, project.id);
         option.dataset.color = project.color || '';
+        option.dataset.billable = String(
+          project.billable !== false && !unbilledCustomers.has(project.customer),
+        );
         group.append(option);
       });
     select.append(group);
@@ -189,15 +259,21 @@ async function fillPickers() {
   if (running) {
     return;
   }
-  const last = await chrome.storage.local.get({ lastProject: '', lastActivity: '' });
+  const last = await chrome.storage.local.get({ lastProject: '' });
   if (last.lastProject && select.querySelector(`option[value="${last.lastProject}"]`)) {
     select.value = last.lastProject;
   }
   await onProjectChange();
+  await restoreLastActivity();
+}
+
+async function restoreLastActivity() {
+  const { lastActivity } = await chrome.storage.local.get({ lastActivity: '' });
   const activity = el('activity');
-  if (last.lastActivity && activity.querySelector(`option[value="${last.lastActivity}"]`)) {
-    activity.value = last.lastActivity;
+  if (lastActivity && activity.querySelector(`option[value="${lastActivity}"]`)) {
+    activity.value = lastActivity;
     markChosen(activity);
+    resetBillable();
   }
 }
 
@@ -217,9 +293,22 @@ async function onProjectChange() {
     const activities = await api.activities(settings, select.value || null);
     activities
       .sort((a, b) => a.name.localeCompare(b.name))
-      .forEach((item) => activity.append(new Option(item.name, item.id)));
+      .forEach((item) => {
+        const option = new Option(item.name, item.id);
+        option.dataset.billable = String(item.billable !== false);
+        activity.append(option);
+      });
   } catch (error) {
     showError(describeError(error));
+  }
+  resetBillable();
+}
+
+function onActivityChange() {
+  markChosen(el('activity'));
+  // A switch the user already flipped stays where they put it.
+  if (!billableTouched) {
+    resetBillable();
   }
 }
 
@@ -254,7 +343,13 @@ function recentRow(entry) {
   title.textContent = entry.description;
   const where = document.createElement('span');
   where.className = 'where truncate';
-  where.textContent = [entry.project?.name, entry.activity?.name].filter(Boolean).join(' - ');
+  if (entry.billable === false) {
+    const badge = document.createElement('span');
+    badge.className = 'unbilled';
+    badge.textContent = t('billableShortOff');
+    where.append(badge);
+  }
+  where.append([entry.project?.name, entry.activity?.name].filter(Boolean).join(' - '));
   body.append(title, where);
 
   const play = document.createElement('button');
@@ -287,6 +382,12 @@ async function resume(entry) {
       markChosen(activity);
     }
   }
+
+  // Repeating an entry repeats how it was billed, not the project default.
+  billable = entry.billable !== false;
+  billableTouched = true;
+  renderBillable();
+
   await onToggle();
 }
 
@@ -323,6 +424,7 @@ async function startTracking() {
       project: Number(project),
       activity: Number(activity),
       description,
+      billable: billableTouched ? billable : undefined,
     });
     await chrome.storage.local.set({ lastProject: project, lastActivity: activity });
     chrome.runtime.sendMessage({ type: 'refresh' });

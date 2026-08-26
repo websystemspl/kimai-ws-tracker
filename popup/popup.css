@@ -175,6 +175,41 @@ section { padding: 12px 14px; }
 
 .inline.chosen { color: var(--fg); font-weight: 500; }
 
+/* Billable switch, the Toggl "$" - green when the hours go on the invoice. */
+.flag {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 26px;
+  padding: 0 8px 0 5px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.flag:hover:not(:disabled) { background: var(--surface); }
+
+.flag:focus-visible {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.flag.on {
+  color: var(--start);
+  border-color: color-mix(in srgb, var(--start) 45%, transparent);
+}
+
+.flag:disabled { cursor: default; }
+.flag .slash { display: none; }
+.flag:not(.on) .slash { display: block; }
+
 .error {
   margin: 10px 0 0;
   padding: 7px 9px;
@@ -233,6 +268,16 @@ li:last-child { border-bottom: 0; }
 }
 
 .play:hover { background: var(--surface); color: var(--start); }
+
+.entry .where .unbilled {
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0 4px;
+  margin-right: 5px;
+  font-size: 10px;
+  white-space: nowrap;
+}
 
 .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 

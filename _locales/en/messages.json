@@ -132,6 +132,27 @@
   "chooseActivity": {
     "message": "+ type of work"
   },
+  "billableOn": {
+    "message": "Billable to the client - click to keep these hours off the invoice"
+  },
+  "billableOff": {
+    "message": "Not billable (internal) - click to bill these hours to the client"
+  },
+  "billableChipOn": {
+    "message": "billable"
+  },
+  "billableChipOff": {
+    "message": "not billable"
+  },
+  "billableStateOn": {
+    "message": "Billable to the client"
+  },
+  "billableStateOff": {
+    "message": "Not billable (internal)"
+  },
+  "billableShortOff": {
+    "message": "not billable"
+  },
   "errNoPermission": {
     "message": "Without access to that address the add-on cannot reach Kimai."
   }

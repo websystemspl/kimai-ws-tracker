@@ -144,16 +144,42 @@
   "billableChipOff": {
     "message": "niepłatne"
   },
-  "billableStateOn": {
-    "message": "Płatne dla klienta"
-  },
-  "billableStateOff": {
-    "message": "Niepłatne (wewnętrzne)"
-  },
   "billableShortOff": {
     "message": "niepłatne"
   },
   "errNoPermission": {
     "message": "Bez zgody na dostęp do tego adresu dodatek nie połączy się z Kimai."
+  },
+  "todayTotal": {
+    "message": "Dziś $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "fromLabel": {
+    "message": "od"
+  },
+  "toLabel": {
+    "message": "do"
+  },
+  "endHint": {
+    "message": "puste = teraz"
+  },
+  "savedDescription": {
+    "message": "Opis zapisany."
+  },
+  "savedTime": {
+    "message": "Godzina rozpoczęcia zapisana."
+  },
+  "savedBillable": {
+    "message": "Zapisane."
+  },
+  "errBeginFuture": {
+    "message": "Rozpoczęcie nie może być w przyszłości."
+  },
+  "errEndBeforeBegin": {
+    "message": "Zakończenie musi być późniejsze niż rozpoczęcie."
   }
 }

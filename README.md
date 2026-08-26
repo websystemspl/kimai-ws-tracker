@@ -15,6 +15,9 @@ for Kimai", którego licencja zabrania modyfikacji i dystrybucji dzieł pochodny
   używa przestarzałego `X-AUTH`, ograniczanego w Kimai 2.65 rate-limiterem.
 - Projekty pogrupowane po kliencie, więc lista 74 pozycji da się przejść.
 - **Przełącznik „płatne dla klienta"** przy projekcie i rodzaju pracy, jak w Toggl.
+- Trwający wpis da się poprawić bez wchodzenia do panelu: opis, godzina rozpoczęcia,
+  godzina zakończenia i płatność.
+- Suma czasu z dzisiaj w nagłówku okna.
 
 ## Instalacja
 
@@ -58,9 +61,25 @@ Ikona pokazuje na plakietce, ile trwa bieżący pomiar. Kliknięcie otwiera okno
 
 - **gdy nic nie mierzysz** - wybierasz projekt, rodzaj pracy, wpisujesz co robisz,
   klikasz „Rozpocznij". Ostatni projekt i rodzaj pracy są zapamiętywane.
-- **gdy pomiar trwa** - widzisz co i od kiedy, klikasz „Zatrzymaj".
+- **gdy pomiar trwa** - widzisz co i od kiedy, klikasz „Zatrzymaj". Opis, godzinę
+  rozpoczęcia i płatność można poprawić w locie, patrz niżej.
 - **„Ostatnie wpisy"** - „Wznów" przepisuje projekt, rodzaj pracy, opis i znacznik
-  płatności do formularza, żeby dało się kontynuować bez klikania od nowa.
+  płatności do formularza, żeby dało się kontynuować bez klikania od nowa. Jeśli akurat
+  coś jest mierzone, „Wznów" zatrzymuje bieżący wpis i przełącza pomiar na wybrany.
+- **W nagłówku** jest suma czasu z dzisiaj, razem z trwającym pomiarem.
+
+## Poprawianie trwającego wpisu
+
+Nie trzeba po to wchodzić do panelu Kimai.
+
+| Co | Jak |
+|---|---|
+| Opis | pisz w polu opisu; zapisuje się chwilę po przerwaniu pisania, przy wyjściu z pola i pod Enterem |
+| Godzina rozpoczęcia | pole „od" pod projektem; przyszłej godziny nie przyjmie |
+| Godzina zakończenia | pole „do"; puste = „Zatrzymaj" kończy teraz, wpisana godzina kończy wpis o tej godzinie |
+| Płatne / niepłatne | ten sam przełącznik co przy starcie |
+
+Projekt i rodzaj pracy zostają zablokowane - ich zmiana to już inny wpis, nie poprawka.
 
 ## Płatne dla klienta
 
@@ -118,6 +137,10 @@ Poza tym używa `storage` (ustawienia i ostatni wybór) oraz `alarms` (odśwież
 plakietki z czasem). Żadnych innych uprawnień, żadnej telemetrii.
 
 ## Historia zmian
+
+- **1.2.0** - uwagi zespołu z pierwszych testów: edycja opisu, godziny rozpoczęcia
+  i zakończenia trwającego wpisu, „Wznów" przełącza trwający pomiar, suma czasu z dzisiaj
+  w nagłówku, wycentrowany kwadrat na przycisku „Zatrzymaj".
 
 - **1.1.0** - przełącznik „płatne dla klienta" przy pomiarze, etykieta wpisów
   niepłatnych na liście ostatnich, „Wznów" przenosi też znacznik płatności.

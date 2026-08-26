@@ -28,6 +28,10 @@
 
 * { box-sizing: border-box; }
 
+/* A display rule on a class outranks the browser's own [hidden] handling, and
+   every panel here is toggled through the hidden attribute. */
+[hidden] { display: none !important; }
+
 body {
   width: 360px;
   margin: 0;
@@ -46,6 +50,17 @@ header {
 
 .brand { font-size: 12px; font-weight: 700; letter-spacing: .01em; }
 .brand-dim { color: var(--muted); font-weight: 500; }
+
+.today {
+  margin-left: auto;
+  margin-right: 8px;
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.today b { color: var(--fg); font-weight: 600; }
 
 .icon-btn {
   display: flex;
@@ -118,6 +133,10 @@ section { padding: 12px 14px; }
   display: flex;
   align-items: center;
   justify-content: center;
+  /* Chrome's own button padding is not symmetric, and leaving it in pushed the
+     stop square off centre. Reset it and nudge only the play triangle, whose
+     shape needs the optical correction. */
+  padding: 0;
   border: 0;
   border-radius: 50%;
   color: #fff;
@@ -129,8 +148,10 @@ section { padding: 12px 14px; }
 .round:active:not(:disabled) { transform: scale(.94); }
 .round:disabled { opacity: .5; cursor: default; }
 
-.round.start { background: var(--start); padding-left: 3px; }
-.round.stop  { background: var(--stop); padding-left: 0; }
+.round.start { background: var(--start); }
+.round.stop  { background: var(--stop); }
+
+.round.start .icon-start { margin-left: 2px; }
 
 .round.start .icon-stop  { display: none; }
 .round.stop  .icon-start { display: none; }
@@ -221,6 +242,48 @@ section { padding: 12px 14px; }
 
 @media (prefers-color-scheme: dark) {
   .error { color: #ff8a80; }
+}
+
+/* --- times of the running entry ------------------------------------------ */
+
+.times {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.time {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.times input {
+  padding: 3px 5px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--surface);
+  color: var(--fg);
+  font: inherit;
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.times input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background: var(--bg);
+}
+
+.times-hint { flex: 1; min-width: 0; text-align: right; }
+
+.saved {
+  margin: 8px 0 0;
+  color: var(--start);
+  font-size: 11px;
 }
 
 /* --- recent list --------------------------------------------------------- */

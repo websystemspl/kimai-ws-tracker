@@ -144,16 +144,42 @@
   "billableChipOff": {
     "message": "not billable"
   },
-  "billableStateOn": {
-    "message": "Billable to the client"
-  },
-  "billableStateOff": {
-    "message": "Not billable (internal)"
-  },
   "billableShortOff": {
     "message": "not billable"
   },
   "errNoPermission": {
     "message": "Without access to that address the add-on cannot reach Kimai."
+  },
+  "todayTotal": {
+    "message": "Today $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
+  "fromLabel": {
+    "message": "from"
+  },
+  "toLabel": {
+    "message": "to"
+  },
+  "endHint": {
+    "message": "empty = now"
+  },
+  "savedDescription": {
+    "message": "Description saved."
+  },
+  "savedTime": {
+    "message": "Start time saved."
+  },
+  "savedBillable": {
+    "message": "Saved."
+  },
+  "errBeginFuture": {
+    "message": "The start cannot be in the future."
+  },
+  "errEndBeforeBegin": {
+    "message": "The end has to be later than the start."
   }
 }

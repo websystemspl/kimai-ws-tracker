@@ -1,8 +1,9 @@
-import { api, ApiError, getSettings, isConfigured } from '../lib/api.js';
+import { api, ApiError, getSettings, isConfigured, localStamp } from '../lib/api.js';
 import { applyI18n, initI18n, t } from '../lib/i18n.js';
 import { validateDescription } from '../lib/validate.js';
 
 const el = (id) => document.getElementById(id);
+const pad = (n) => String(n).padStart(2, '0');
 
 let settings;
 let running = null;
@@ -11,6 +12,10 @@ let clockTimer = null;
 // user said so themselves - an untouched value is left to Kimai to decide.
 let billable = true;
 let billableTouched = false;
+// Seconds already booked today by finished entries; the running one is added live.
+let todaySeconds = 0;
+let savedTimer = null;
+let descriptionTimer = null;
 
 init();
 
@@ -26,16 +31,26 @@ async function init() {
   el('activity').addEventListener('change', onActivityChange);
   el('billable').addEventListener('click', onBillableClick);
 
+  el('beginTime').addEventListener('change', onBeginChange);
+
   const description = el('description');
   description.addEventListener('input', () => {
     showError('');
     autoGrow(description);
+    // Closing the popup does not always deliver a blur event, so a running entry
+    // also saves shortly after typing stops.
+    if (running) {
+      clearTimeout(descriptionTimer);
+      descriptionTimer = setTimeout(() => saveDescription({ quiet: true }), 1200);
+    }
   });
-  // Enter starts tracking, Shift+Enter adds a line.
+  description.addEventListener('blur', () => saveDescription());
+  // Enter starts tracking, or saves the edited description of a running entry.
+  // Shift+Enter adds a line.
   description.addEventListener('keydown', (event) => {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      onToggle();
+      running ? description.blur() : onToggle();
     }
   });
 
@@ -59,6 +74,15 @@ function showError(message) {
   const box = el('error');
   box.textContent = message;
   box.hidden = !message;
+}
+
+/** Short confirmation that an edit of the running entry reached Kimai. */
+function flash(message) {
+  const box = el('saved');
+  box.textContent = message;
+  box.hidden = false;
+  clearTimeout(savedTimer);
+  savedTimer = setTimeout(() => { box.hidden = true; }, 2000);
 }
 
 function describeError(error) {
@@ -94,6 +118,7 @@ async function render() {
     await fillPickers();
     running ? enterRunningState() : await enterIdleState();
     await renderRecent();
+    await renderToday();
   } catch (error) {
     show('tracker');
     showError(describeError(error));
@@ -103,8 +128,8 @@ async function render() {
 function enterRunningState() {
   const description = el('description');
   description.value = running.description || '';
-  description.readOnly = true;
   autoGrow(description);
+  fillTimes();
 
   el('project').value = running.project?.id ?? '';
   el('activity').replaceChildren(new Option(running.activity?.name ?? '', ''));
@@ -132,8 +157,9 @@ function enterRunningState() {
 
 async function enterIdleState() {
   stopClock();
+  el('times').hidden = true;
+  el('endTime').value = '';
   const description = el('description');
-  description.readOnly = false;
   description.value = '';
   autoGrow(description);
   description.focus();
@@ -163,19 +189,75 @@ async function enterIdleState() {
   renderBillable();
 }
 
+// --- times and daily total -------------------------------------------------
+
+function fillTimes() {
+  const begin = new Date(running.begin);
+  el('beginTime').value = `${pad(begin.getHours())}:${pad(begin.getMinutes())}`;
+  el('endTime').value = '';
+  el('times').hidden = false;
+}
+
+/** The same day as `day`, at the "HH:MM" wall clock of `value`. */
+function withTime(day, value) {
+  const [hours, minutes] = value.split(':').map(Number);
+  const result = new Date(day);
+  result.setHours(hours, minutes, 0, 0);
+  return result;
+}
+
+async function onBeginChange() {
+  if (!running || !el('beginTime').value) {
+    return;
+  }
+  showError('');
+  const begin = withTime(new Date(running.begin), el('beginTime').value);
+  if (begin.getTime() > Date.now()) {
+    fillTimes();
+    return showError(t('errBeginFuture'));
+  }
+  try {
+    const updated = await api.update(settings, running.id, { begin: localStamp(begin) });
+    running.begin = updated.begin;
+    stopClock();
+    startClock(new Date(running.begin).getTime());
+    flash(t('savedTime'));
+  } catch (error) {
+    fillTimes();
+    showError(describeError(error));
+  }
+}
+
+async function renderToday() {
+  try {
+    const entries = await api.today(settings);
+    // A running entry is reported with duration 0, its time is added by the clock.
+    todaySeconds = entries.reduce((sum, entry) => sum + (entry.duration || 0), 0);
+    paintToday();
+  } catch {
+    el('today').hidden = true;
+  }
+}
+
+function paintToday() {
+  const live = running
+    ? Math.max(0, Math.floor((Date.now() - new Date(running.begin).getTime()) / 1000))
+    : 0;
+  const total = todaySeconds + live;
+  el('today').textContent = t('todayTotal', `${Math.floor(total / 3600)}:${pad(Math.floor(total / 60) % 60)}`);
+  el('today').hidden = false;
+}
+
 // --- billable switch -------------------------------------------------------
 
 function renderBillable() {
   const button = el('billable');
-  const label = running
-    ? t(billable ? 'billableStateOn' : 'billableStateOff')
-    : t(billable ? 'billableOn' : 'billableOff');
+  const label = billable ? t('billableOn') : t('billableOff');
   el('billableLabel').textContent = billable ? t('billableChipOn') : t('billableChipOff');
   button.classList.toggle('on', billable);
   button.setAttribute('aria-pressed', String(billable));
   button.setAttribute('aria-label', label);
   button.title = label;
-  button.disabled = Boolean(running);
 }
 
 /** Mirrors Kimai: billable unless the customer, project or activity says otherwise. */
@@ -190,20 +272,60 @@ function resetBillable() {
   renderBillable();
 }
 
-function onBillableClick() {
-  if (running) {
+async function onBillableClick() {
+  billable = !billable;
+  renderBillable();
+
+  if (!running) {
+    billableTouched = true;
     return;
   }
-  billable = !billable;
-  billableTouched = true;
-  renderBillable();
+  // A running entry is corrected straight away, the same as its description.
+  try {
+    await api.update(settings, running.id, { billable });
+    running.billable = billable;
+    flash(t('savedBillable'));
+  } catch (error) {
+    billable = !billable;
+    renderBillable();
+    showError(describeError(error));
+  }
+}
+
+/** @param {{quiet?: boolean}} options - a save while typing stays silent. */
+async function saveDescription({ quiet = false } = {}) {
+  clearTimeout(descriptionTimer);
+  if (!running) {
+    return;
+  }
+  const text = el('description').value.trim();
+  if (text === (running.description || '')) {
+    return;
+  }
+  const check = validateDescription(text, Number(settings.minDescription));
+  if (!check.ok) {
+    if (quiet) {
+      return;
+    }
+    return showError(check.reason === 'generic'
+      ? t('errDescGeneric', check.word)
+      : t('errDescShort', settings.minDescription));
+  }
+  try {
+    await api.update(settings, running.id, { description: text });
+    running.description = text;
+    showError('');
+    flash(t('savedDescription'));
+  } catch (error) {
+    showError(describeError(error));
+  }
 }
 
 function startClock(startedAt) {
-  const pad = (n) => String(n).padStart(2, '0');
   const tick = () => {
     const s = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
     el('clock').textContent = `${Math.floor(s / 3600)}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
+    paintToday();
   };
   tick();
   clockTimer = setInterval(tick, 1000);
@@ -365,9 +487,19 @@ function recentRow(entry) {
 }
 
 async function resume(entry) {
+  // Clicking resume while something runs switches the timer over: the current
+  // entry is closed and the copied one starts in its place.
   if (running) {
-    return;
+    try {
+      await api.stop(settings, running.id);
+    } catch (error) {
+      return showError(describeError(error));
+    }
+    running = null;
+    await enterIdleState();
+    await renderToday();
   }
+
   el('description').value = entry.description || '';
   autoGrow(el('description'));
 
@@ -437,9 +569,25 @@ async function startTracking() {
 
 async function stopTracking() {
   showError('');
+
+  // An end time typed into the "to" field closes the entry there instead of now.
+  const wanted = el('endTime').value;
+  let endStamp = null;
+  if (wanted) {
+    const end = withTime(new Date(running.begin), wanted);
+    if (end.getTime() <= new Date(running.begin).getTime()) {
+      return showError(t('errEndBeforeBegin'));
+    }
+    endStamp = localStamp(end);
+  }
+
   el('toggle').disabled = true;
   try {
-    await api.stop(settings, running.id);
+    if (endStamp) {
+      await api.update(settings, running.id, { end: endStamp });
+    } else {
+      await api.stop(settings, running.id);
+    }
     stopClock();
     chrome.runtime.sendMessage({ type: 'refresh' });
     await render();

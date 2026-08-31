@@ -21,10 +21,9 @@ for Kimai", którego licencja zabrania modyfikacji i dystrybucji dzieł pochodny
 
 ## Instalacja
 
-Najprościej ze sklepu:
-[Chrome Web Store](https://chromewebstore.google.com/detail/time-tracker-addon-for-ki/bghjfeabolphmfnpjphegbofkneclpmb)
-albo [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/time-tracker-addon-kimai/).
-Wersję z repozytorium instaluje się z pliku.
+Najprościej z [Chrome Web Store](https://chromewebstore.google.com/detail/kimai-pomiar-czasu-web-sy/eliiemekophpilppaobljfjkhbkmchjg) - to działa też w Edge i Brave.
+W Firefoksie dodatku nie ma w sklepie, tam instaluje się go z pliku, tak samo jak
+wersję prosto z repozytorium.
 
 **Chrome / Edge / Brave**
 

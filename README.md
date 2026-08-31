@@ -21,7 +21,10 @@ for Kimai", którego licencja zabrania modyfikacji i dystrybucji dzieł pochodny
 
 ## Instalacja
 
-Dodatek nie jest w sklepie, więc instaluje się go z pliku.
+Najprościej ze sklepu:
+[Chrome Web Store](https://chromewebstore.google.com/detail/time-tracker-addon-for-ki/bghjfeabolphmfnpjphegbofkneclpmb)
+albo [Firefox Add-ons](https://addons.mozilla.org/en-US/firefox/addon/time-tracker-addon-kimai/).
+Wersję z repozytorium instaluje się z pliku.
 
 **Chrome / Edge / Brave**
 
@@ -94,9 +97,26 @@ własny znacznik „Płatne", a wyłączenie któregokolwiek z nich robi wpis ni
 Przełącznik zmienia to dla jednego wpisu i wraca do domyślnego po zmianie projektu.
 Nietkniętego dodatek nie wysyła w ogóle - wtedy decyduje sama instancja Kimai.
 
-Podczas trwającego pomiaru przełącznik tylko pokazuje stan wpisu. Żeby go zmienić
-po fakcie, edytuje się wpis w panelu Kimai. Wpisy niepłatne mają na liście ostatnich
-szarą etykietę „niepłatne".
+Podczas trwającego pomiaru przełącznik działa tak samo - kliknięcie od razu poprawia
+wpis. Wpisy niepłatne mają na liście ostatnich szarą etykietę „niepłatne".
+
+### Uprawnienie po stronie Kimai
+
+Pole „Płatne" nie jest w Kimai dostępne dla każdego. Daje je uprawnienie
+`edit_billable_own_timesheet`, które domyślnie ma dopiero rola teamlead i wyżej -
+zwykły `ROLE_USER` nie ma go ani w panelu, ani w API. Formularz wpisu w API nie zna
+wtedy pola `billable`, a **całe żądanie** kończy się błędem 400
+„This form should not contain extra fields.", więc bez obsługi tego przypadku
+nie dało się nawet wystartować pomiaru.
+
+Dodatek radzi sobie z tym sam: gdy Kimai odrzuci znacznik płatności, wysyła wpis
+jeszcze raz bez niego (pomiar rusza, płatność ustala Kimai z klienta, projektu
+i rodzaju pracy), a przełącznik wyszarza z wyjaśnieniem. Blokada trzyma się do
+następnego zapisu ustawień - to moment, w którym warto sprawdzić jeszcze raz.
+
+Żeby przełącznik działał, administrator Kimai włącza `edit_billable_own_timesheet`
+dla roli `ROLE_USER`: Administracja > Role, kolumna `ROLE_USER`, sekcja
+„Timesheet (own)".
 
 ## O opisach
 
@@ -137,6 +157,13 @@ Poza tym używa `storage` (ustawienia i ostatni wybór) oraz `alarms` (odśwież
 plakietki z czasem). Żadnych innych uprawnień, żadnej telemetrii.
 
 ## Historia zmian
+
+- **1.2.1** - dodatek przestaje się wykładać na kontach bez uprawnienia
+  `edit_billable_own_timesheet`. Wcześniej każda akcja w oknie dodatku kończyła się
+  u nich błędem 400, bo Kimai odrzucał całe żądanie ze znacznikiem płatności.
+  Teraz wpis zapisuje się bez niego, a przełącznik jest wyszarzony z wyjaśnieniem.
+  Komunikaty o błędzie 400 pokazują też, co konkretnie Kimai odrzucił, zamiast
+  samego „Kimai zwrócił błąd: 400".
 
 - **1.2.0** - uwagi zespołu z pierwszych testów: edycja opisu, godziny rozpoczęcia
   i zakończenia trwającego wpisu, „Wznów" przełącza trwający pomiar, suma czasu z dzisiaj

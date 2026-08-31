@@ -62,6 +62,14 @@
       }
     }
   },
+  "errRejected": {
+    "message": "Kimai rejected the data: $MSG$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
   "optTitle": {
     "message": "Kimai add-on settings"
   },
@@ -146,6 +154,12 @@
   },
   "billableShortOff": {
     "message": "not billable"
+  },
+  "billableLocked": {
+    "message": "Your Kimai account is not allowed to change how this is billed (edit_billable_own_timesheet)."
+  },
+  "errBillableDenied": {
+    "message": "Your Kimai account cannot set billable / not billable. The entry was saved the way the project defines it. An administrator grants this with the edit_billable_own_timesheet permission."
   },
   "errNoPermission": {
     "message": "Without access to that address the add-on cannot reach Kimai."

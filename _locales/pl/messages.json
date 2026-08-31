@@ -62,6 +62,14 @@
       }
     }
   },
+  "errRejected": {
+    "message": "Kimai odrzucił dane: $MSG$",
+    "placeholders": {
+      "msg": {
+        "content": "$1"
+      }
+    }
+  },
   "optTitle": {
     "message": "Ustawienia dodatku Kimai"
   },
@@ -146,6 +154,12 @@
   },
   "billableShortOff": {
     "message": "niepłatne"
+  },
+  "billableLocked": {
+    "message": "Twoje konto Kimai nie ma uprawnienia do zmiany płatności (edit_billable_own_timesheet)."
+  },
+  "errBillableDenied": {
+    "message": "Twoje konto Kimai nie może ustawiać „płatne / niepłatne\". Wpis zapisany tak, jak wynika z projektu. Administrator włącza to uprawnieniem edit_billable_own_timesheet."
   },
   "errNoPermission": {
     "message": "Bez zgody na dostęp do tego adresu dodatek nie połączy się z Kimai."

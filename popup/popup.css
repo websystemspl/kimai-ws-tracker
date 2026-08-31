@@ -228,6 +228,7 @@ section { padding: 12px 14px; }
 }
 
 .flag:disabled { cursor: default; }
+.flag.locked { opacity: .5; }
 .flag .slash { display: none; }
 .flag:not(.on) .slash { display: block; }
 

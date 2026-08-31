@@ -47,6 +47,9 @@ async function save() {
   }
   settings = form;
   await chrome.storage.sync.set(settings);
+  // A different server or token can well be allowed to set the billable flag,
+  // so the popup gets to find that out again instead of staying locked.
+  await chrome.storage.local.remove('billableAllowed');
   status(t('optSaved'));
   await initI18n(settings.language);
   applyI18n();

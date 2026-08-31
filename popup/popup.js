@@ -1,4 +1,11 @@
-import { api, ApiError, getSettings, isConfigured, localStamp } from '../lib/api.js';
+import {
+  api,
+  ApiError,
+  getSettings,
+  isBillableRejected,
+  isConfigured,
+  localStamp,
+} from '../lib/api.js';
 import { applyI18n, initI18n, t } from '../lib/i18n.js';
 import { validateDescription } from '../lib/validate.js';
 
@@ -12,6 +19,9 @@ let clockTimer = null;
 // user said so themselves - an untouched value is left to Kimai to decide.
 let billable = true;
 let billableTouched = false;
+// Kimai hands the billable field only to accounts allowed to edit it. Once it has
+// turned a request down, the switch is locked and the entry is left to Kimai.
+let billableAllowed = true;
 // Seconds already booked today by finished entries; the running one is added live.
 let todaySeconds = 0;
 let savedTimer = null;
@@ -21,6 +31,7 @@ init();
 
 async function init() {
   settings = await getSettings();
+  ({ billableAllowed } = await chrome.storage.local.get({ billableAllowed: true }));
   await initI18n(settings.language);
   applyI18n();
 
@@ -94,6 +105,9 @@ function describeError(error) {
   }
   if (error.status === 401 || error.status === 403) {
     return t('errAuth');
+  }
+  if (error.status === 400 && error.message) {
+    return t('errRejected', error.message);
   }
   return t('errServer', error.status);
 }
@@ -252,12 +266,25 @@ function paintToday() {
 
 function renderBillable() {
   const button = el('billable');
-  const label = billable ? t('billableOn') : t('billableOff');
+  const state = billable ? t('billableOn') : t('billableOff');
+  const label = billableAllowed ? state : t('billableLocked');
   el('billableLabel').textContent = billable ? t('billableChipOn') : t('billableChipOff');
   button.classList.toggle('on', billable);
+  button.classList.toggle('locked', !billableAllowed);
+  button.disabled = !billableAllowed;
   button.setAttribute('aria-pressed', String(billable));
   button.setAttribute('aria-label', label);
   button.title = label;
+}
+
+/**
+ * Remembered across popup sessions, because the permission will not appear on its
+ * own; saving the settings clears it, which is the moment to look again.
+ */
+async function lockBillable() {
+  billableAllowed = false;
+  await chrome.storage.local.set({ billableAllowed: false });
+  renderBillable();
 }
 
 /** Mirrors Kimai: billable unless the customer, project or activity says otherwise. */
@@ -287,6 +314,10 @@ async function onBillableClick() {
     flash(t('savedBillable'));
   } catch (error) {
     billable = !billable;
+    if (isBillableRejected(error)) {
+      await lockBillable();
+      return showError(t('errBillableDenied'));
+    }
     renderBillable();
     showError(describeError(error));
   }
@@ -550,17 +581,30 @@ async function startTracking() {
       : t('errDescShort', settings.minDescription));
   }
 
+  const wanted = billableTouched && billableAllowed ? billable : undefined;
+
   el('toggle').disabled = true;
+  let denied = false;
   try {
-    await api.start(settings, {
-      project: Number(project),
-      activity: Number(activity),
-      description,
-      billable: billableTouched ? billable : undefined,
-    });
+    const entry = { project: Number(project), activity: Number(activity), description };
+    try {
+      await api.start(settings, { ...entry, billable: wanted });
+    } catch (error) {
+      if (wanted === undefined || !isBillableRejected(error)) {
+        throw error;
+      }
+      // The choice cannot be honoured, but the entry itself must not be lost:
+      // start it again and let Kimai decide how it is billed.
+      await lockBillable();
+      await api.start(settings, entry);
+      denied = true;
+    }
     await chrome.storage.local.set({ lastProject: project, lastActivity: activity });
     chrome.runtime.sendMessage({ type: 'refresh' });
     await render();
+    if (denied) {
+      showError(t('errBillableDenied'));
+    }
   } catch (error) {
     showError(describeError(error));
     el('toggle').disabled = false;

@@ -195,5 +195,20 @@
   },
   "errEndBeforeBegin": {
     "message": "The end has to be later than the start."
+  },
+  "recentEmpty": {
+    "message": "No entries to show."
+  },
+  "allEntries": {
+    "message": "All my entries in Kimai"
+  },
+  "noDescription": {
+    "message": "(no description)"
+  },
+  "dayToday": {
+    "message": "Today"
+  },
+  "dayYesterday": {
+    "message": "Yesterday"
   }
 }

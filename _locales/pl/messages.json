@@ -195,5 +195,20 @@
   },
   "errEndBeforeBegin": {
     "message": "Zakończenie musi być późniejsze niż rozpoczęcie."
+  },
+  "recentEmpty": {
+    "message": "Brak wpisów do pokazania."
+  },
+  "allEntries": {
+    "message": "Wszystkie moje wpisy w Kimai"
+  },
+  "noDescription": {
+    "message": "(bez opisu)"
+  },
+  "dayToday": {
+    "message": "Dziś"
+  },
+  "dayYesterday": {
+    "message": "Wczoraj"
   }
 }

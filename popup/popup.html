@@ -69,6 +69,15 @@
   <section id="recentPanel" hidden>
     <h2 data-i18n="recent"></h2>
     <ul id="recent"></ul>
+    <p id="recentEmpty" class="empty" data-i18n="recentEmpty" hidden></p>
+    <!-- The popup only ever holds the tail of the list, so it says where the rest is. -->
+    <a id="allEntries" class="all-link" target="_blank" rel="noopener" hidden>
+      <span data-i18n="allEntries"></span>
+      <svg viewBox="0 0 24 24" width="12" height="12" aria-hidden="true">
+        <path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round" d="M14 4h6v6M20 4l-8.5 8.5M18 14v5a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h5"/>
+      </svg>
+    </a>
   </section>
 
   <script type="module" src="popup.js"></script>

@@ -65,9 +65,12 @@ Ikona pokazuje na plakietce, ile trwa bieżący pomiar. Kliknięcie otwiera okno
   klikasz „Rozpocznij". Ostatni projekt i rodzaj pracy są zapamiętywane.
 - **gdy pomiar trwa** - widzisz co i od kiedy, klikasz „Zatrzymaj". Opis, godzinę
   rozpoczęcia i płatność można poprawić w locie, patrz niżej.
-- **„Ostatnie wpisy"** - „Wznów" przepisuje projekt, rodzaj pracy, opis i znacznik
+- **„Ostatnie wpisy"** - dwadzieścia ostatnich wpisów, z podziałem na dni („Dziś",
+  „Wczoraj", data) i sumą godzin przy każdym dniu, a przy wpisie czas trwania
+  i zakres godzin. „Wznów" przepisuje projekt, rodzaj pracy, opis i znacznik
   płatności do formularza, żeby dało się kontynuować bez klikania od nowa. Jeśli akurat
   coś jest mierzone, „Wznów" zatrzymuje bieżący wpis i przełącza pomiar na wybrany.
+  Pod listą jest link „Wszystkie moje wpisy w Kimai", otwierający „Moje czasy" w panelu.
 - **W nagłówku** jest suma czasu z dzisiaj, razem z trwającym pomiarem.
 
 ## Poprawianie trwającego wpisu
@@ -156,6 +159,14 @@ Poza tym używa `storage` (ustawienia i ostatni wybór) oraz `alarms` (odśwież
 plakietki z czasem). Żadnych innych uprawnień, żadnej telemetrii.
 
 ## Historia zmian
+
+- **1.3.0** - lista ostatnich wpisów pokazuje rzeczywiste wpisy, a nie po jednym na
+  parę projekt + rodzaj pracy. Wcześniej brał je endpoint `/api/timesheets/recent`,
+  który zwija listę do jednego wiersza na taką parę, więc dzień przepracowany na
+  jednym projekcie mieścił się w jednej pozycji i reszta godzin wyglądała na zgubioną.
+  Teraz idzie zwykłe `/api/timesheets` z sortowaniem po dacie, z podziałem na dni,
+  sumą dnia, czasem trwania i zakresem godzin przy wpisie. Pod listą doszedł link
+  do „Moich czasów" w panelu Kimai.
 
 - **1.2.1** - dodatek przestaje się wykładać na kontach bez uprawnienia
   `edit_billable_own_timesheet`. Wcześniej każda akcja w oknie dodatku kończyła się

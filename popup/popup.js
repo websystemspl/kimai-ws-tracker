@@ -26,12 +26,18 @@ let billableAllowed = true;
 let todaySeconds = 0;
 let savedTimer = null;
 let descriptionTimer = null;
+// Locale segment of the Kimai URL, needed for the "all my entries" link.
+let kimaiLocale = 'en';
+
+/** How many past entries the popup lists before pointing at Kimai for the rest. */
+const RECENT_SIZE = 20;
 
 init();
 
 async function init() {
   settings = await getSettings();
   ({ billableAllowed } = await chrome.storage.local.get({ billableAllowed: true }));
+  ({ kimaiLocale } = await chrome.storage.local.get({ kimaiLocale: 'en' }));
   await initI18n(settings.language);
   applyI18n();
 
@@ -468,18 +474,86 @@ function onActivityChange() {
 async function renderRecent() {
   const list = el('recent');
   list.replaceChildren();
+  el('recentPanel').hidden = false;
   try {
-    const entries = await api.recent(settings);
-    const usable = entries.filter((entry) => entry.description);
-    if (!usable.length) {
-      el('recentPanel').hidden = true;
-      return;
-    }
-    usable.forEach((entry) => list.append(recentRow(entry)));
-    el('recentPanel').hidden = false;
+    const entries = await api.latest(settings, RECENT_SIZE);
+    rememberKimaiLocale(entries);
+    // The running entry already owns the tracker bar above.
+    const usable = entries.filter((entry) => entry.end);
+    groupByDay(usable).forEach(([, ofDay]) => {
+      list.append(dayHeader(ofDay));
+      ofDay.forEach((entry) => list.append(recentRow(entry)));
+    });
+    el('recentEmpty').hidden = usable.length > 0;
   } catch {
-    el('recentPanel').hidden = true;
+    list.replaceChildren();
+    el('recentEmpty').hidden = false;
   }
+  paintAllEntriesLink();
+}
+
+/** Local calendar day of an entry, as a comparable key. */
+function dayKey(stamp) {
+  const date = new Date(stamp);
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`;
+}
+
+/** [[key, entries], ...] in the order the entries arrived, newest day first. */
+function groupByDay(entries) {
+  const days = new Map();
+  entries.forEach((entry) => {
+    const key = dayKey(entry.begin);
+    if (!days.has(key)) {
+      days.set(key, []);
+    }
+    days.get(key).push(entry);
+  });
+  return [...days.entries()];
+}
+
+function dayHeader(ofDay) {
+  const row = document.createElement('li');
+  row.className = 'day';
+
+  const name = document.createElement('span');
+  name.textContent = dayName(ofDay[0].begin);
+
+  const total = document.createElement('span');
+  total.textContent = shortDuration(
+    ofDay.reduce((sum, entry) => sum + (entry.duration || 0), 0),
+  );
+
+  row.append(name, total);
+  return row;
+}
+
+function dayName(stamp) {
+  const day = new Date(stamp);
+  const midnight = new Date();
+  midnight.setHours(0, 0, 0, 0);
+  const daysBack = Math.round((midnight - new Date(day).setHours(0, 0, 0, 0)) / 86400000);
+  if (daysBack === 0) {
+    return t('dayToday');
+  }
+  if (daysBack === 1) {
+    return t('dayYesterday');
+  }
+  return day.toLocaleDateString(document.documentElement.lang || undefined, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  });
+}
+
+/** "1:09" - the same h:mm the header and the clock use. */
+function shortDuration(seconds) {
+  const total = Math.max(0, Math.round(seconds || 0));
+  return `${Math.floor(total / 3600)}:${pad(Math.floor(total / 60) % 60)}`;
+}
+
+function clockOf(stamp) {
+  const date = new Date(stamp);
+  return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 function recentRow(entry) {
@@ -493,7 +567,10 @@ function recentRow(entry) {
   body.className = 'entry';
   const title = document.createElement('span');
   title.className = 'title truncate';
-  title.textContent = entry.description;
+  // Descriptions copied out of Trello or Slack carry line breaks; on one line
+  // they would swallow the rest of the text.
+  title.textContent = (entry.description || '').replace(/\s+/g, ' ').trim() || t('noDescription');
+  title.title = entry.description || '';
   const where = document.createElement('span');
   where.className = 'where truncate';
   if (entry.billable === false) {
@@ -505,6 +582,14 @@ function recentRow(entry) {
   where.append([entry.project?.name, entry.activity?.name].filter(Boolean).join(' - '));
   body.append(title, where);
 
+  const when = document.createElement('span');
+  when.className = 'when';
+  const length = document.createElement('b');
+  length.textContent = shortDuration(entry.duration);
+  const span = document.createElement('span');
+  span.textContent = `${clockOf(entry.begin)}-${clockOf(entry.end)}`;
+  when.append(length, span);
+
   const play = document.createElement('button');
   play.type = 'button';
   play.className = 'play';
@@ -513,8 +598,27 @@ function recentRow(entry) {
     '<path fill="currentColor" d="M8 5v14l11-7z"/></svg>';
   play.addEventListener('click', () => resume(entry));
 
-  row.append(dot, body, play);
+  row.append(dot, body, when, play);
   return row;
+}
+
+/**
+ * Kimai has no locale-free route: /timesheet/ is a 404, only /{locale}/timesheet/
+ * answers. The language of the account comes with the entries, so it is picked up
+ * from there and kept for the next time the popup opens on an empty list.
+ */
+function rememberKimaiLocale(entries) {
+  const language = entries.find((entry) => entry.user?.language)?.user.language;
+  if (language && language !== kimaiLocale) {
+    kimaiLocale = language;
+    chrome.storage.local.set({ kimaiLocale: language });
+  }
+}
+
+function paintAllEntriesLink() {
+  const link = el('allEntries');
+  link.href = `${settings.url}/${kimaiLocale}/timesheet/`;
+  link.hidden = !settings.url;
 }
 
 async function resume(entry) {

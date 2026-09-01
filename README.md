@@ -1,4 +1,4 @@
-# Kimai - pomiar czasu (Web Systems)
+# WS Tracker - pomiar czasu dla Kimai
 
 Własny dodatek do Chrome i Firefox do startowania i zatrzymywania pomiaru czasu
 w naszym Kimai. Napisany od zera - nie jest przeróbką dodatku „Time Tracker Addon
@@ -71,6 +71,8 @@ Ikona pokazuje na plakietce, ile trwa bieżący pomiar. Kliknięcie otwiera okno
   płatności do formularza, żeby dało się kontynuować bez klikania od nowa. Jeśli akurat
   coś jest mierzone, „Wznów" zatrzymuje bieżący wpis i przełącza pomiar na wybrany.
   Pod listą jest link „Wszystkie moje wpisy w Kimai", otwierający „Moje czasy" w panelu.
+  Przy każdym wpisie jest też znaczek „$" - kliknięcie przestawia płatność tego wpisu
+  od razu, bez wchodzenia do panelu.
 - **W nagłówku** jest suma czasu z dzisiaj, razem z trwającym pomiarem.
 
 ## Poprawianie trwającego wpisu
@@ -159,6 +161,15 @@ Poza tym używa `storage` (ustawienia i ostatni wybór) oraz `alarms` (odśwież
 plakietki z czasem). Żadnych innych uprawnień, żadnej telemetrii.
 
 ## Historia zmian
+
+- **1.4.0** - nowy układ okna. Szerokość 400 px zamiast 360, jedna skala odstępów,
+  opisy w liście łamane na dwie linie zamiast ucinane po jednej (wpisy wklejane
+  z Trello różnią się dopiero w połowie zdania), nagłówki dni przyklejone przy
+  przewijaniu, wyłączone pola projektu i rodzaju pracy widać po kreskowanej ramce,
+  komunikaty jako kolorowe paski. Przełącznik płatności przy pomiarze jest teraz
+  samym znaczkiem „$" (opis słowny został dla czytników ekranu).
+  Nowość: **znaczek „$" przy każdym wpisie listy** przestawia płatność tego wpisu
+  bez wchodzenia do panelu - stan maluje się od razu i wraca, jeśli Kimai odmówi.
 
 - **1.3.0** - lista ostatnich wpisów pokazuje rzeczywiste wpisy, a nie po jednym na
   parę projekt + rodzaj pracy. Wcześniej brał je endpoint `/api/timesheets/recent`,

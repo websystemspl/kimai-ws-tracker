@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "Kimai time tracking (Web Systems)"
+    "message": "WS Tracker - time tracking for Kimai"
   },
   "extDescription": {
     "message": "Start, stop and resume Kimai time entries straight from the browser."
@@ -152,8 +152,20 @@
   "billableChipOff": {
     "message": "not billable"
   },
-  "billableShortOff": {
-    "message": "not billable"
+  "billableRowOn": {
+    "message": "Billable - click to keep this entry off the invoice"
+  },
+  "billableRowOff": {
+    "message": "Not billable - click to put this entry on the invoice"
+  },
+  "descriptionLabel": {
+    "message": "Task description"
+  },
+  "projectLabel": {
+    "message": "Project"
+  },
+  "activityLabel": {
+    "message": "Type of work"
   },
   "billableLocked": {
     "message": "Your Kimai account is not allowed to change how this is billed (edit_billable_own_timesheet)."

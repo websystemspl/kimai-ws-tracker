@@ -1,6 +1,6 @@
 {
   "extName": {
-    "message": "Kimai - pomiar czasu (Web Systems)"
+    "message": "WS Tracker - pomiar czasu dla Kimai"
   },
   "extDescription": {
     "message": "Start, stop i wznawianie pomiaru czasu w Kimai prosto z przeglądarki."
@@ -152,8 +152,20 @@
   "billableChipOff": {
     "message": "niepłatne"
   },
-  "billableShortOff": {
-    "message": "niepłatne"
+  "billableRowOn": {
+    "message": "Płatne - kliknij, żeby nie liczyć tego wpisu klientowi"
+  },
+  "billableRowOff": {
+    "message": "Niepłatne - kliknij, żeby policzyć ten wpis klientowi"
+  },
+  "descriptionLabel": {
+    "message": "Opis zadania"
+  },
+  "projectLabel": {
+    "message": "Projekt"
+  },
+  "activityLabel": {
+    "message": "Rodzaj pracy"
   },
   "billableLocked": {
     "message": "Twoje konto Kimai nie ma uprawnienia do zmiany płatności (edit_billable_own_timesheet)."

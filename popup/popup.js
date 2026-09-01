@@ -85,6 +85,12 @@ function show(...panels) {
   ['unconfigured', 'tracker', 'recentPanel'].forEach((id) => {
     el(id).hidden = !panels.includes(id);
   });
+  // The message strips sit outside the panels, so they have to be cleared by hand
+  // when the tracker goes away - otherwise an old error hangs over an empty window.
+  if (!panels.includes('tracker')) {
+    showError('');
+    el('saved').hidden = true;
+  }
 }
 
 function showError(message) {
@@ -120,11 +126,16 @@ function describeError(error) {
 
 function autoGrow(area) {
   area.style.height = 'auto';
-  area.style.height = `${Math.min(area.scrollHeight, 92)}px`;
+  area.style.height = `${Math.min(area.scrollHeight, 96)}px`;
 }
 
-function markChosen(select) {
-  select.classList.toggle('chosen', Boolean(select.value));
+/** The dollar sign of the billable switches, with the slash of the "off" state. */
+function moneyIcon(size) {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor"`
+    + ' stroke-width="2" stroke-linecap="round" aria-hidden="true">'
+    + '<path d="M12 2v20"></path>'
+    + '<path d="M17 6.5c0-1.9-2.2-3-5-3s-5 1.1-5 3 2.2 3 5 3.5 5 1.6 5 3.5-2.2 3-5 3-5-1.1-5-3"></path>'
+    + '<path class="slash" d="M3 21 21 3"></path></svg>';
 }
 
 // --- rendering --------------------------------------------------------------
@@ -155,8 +166,6 @@ function enterRunningState() {
   el('activity').replaceChildren(new Option(running.activity?.name ?? '', ''));
   el('project').disabled = true;
   el('activity').disabled = true;
-  markChosen(el('project'));
-  markChosen(el('activity'));
 
   const dot = el('dot');
   dot.hidden = false;
@@ -274,9 +283,10 @@ function renderBillable() {
   const button = el('billable');
   const state = billable ? t('billableOn') : t('billableOff');
   const label = billableAllowed ? state : t('billableLocked');
+  // The switch is an icon only, so the state has to reach a screen reader some
+  // other way - hence the visually hidden word next to it.
   el('billableLabel').textContent = billable ? t('billableChipOn') : t('billableChipOff');
-  button.classList.toggle('on', billable);
-  button.classList.toggle('locked', !billableAllowed);
+  button.classList.toggle('off', !billable);
   button.disabled = !billableAllowed;
   button.setAttribute('aria-pressed', String(billable));
   button.setAttribute('aria-label', label);
@@ -291,6 +301,7 @@ async function lockBillable() {
   billableAllowed = false;
   await chrome.storage.local.set({ billableAllowed: false });
   renderBillable();
+  lockRecentBillables();
 }
 
 /** Mirrors Kimai: billable unless the customer, project or activity says otherwise. */
@@ -431,15 +442,12 @@ async function restoreLastActivity() {
   const activity = el('activity');
   if (lastActivity && activity.querySelector(`option[value="${lastActivity}"]`)) {
     activity.value = lastActivity;
-    markChosen(activity);
     resetBillable();
   }
 }
 
 async function onProjectChange() {
   const select = el('project');
-  markChosen(select);
-
   const chosen = select.selectedOptions[0];
   const dot = el('dot');
   dot.hidden = !select.value;
@@ -447,7 +455,6 @@ async function onProjectChange() {
 
   const activity = el('activity');
   activity.replaceChildren(new Option(t('chooseActivity'), ''));
-  markChosen(activity);
   try {
     const activities = await api.activities(settings, select.value || null);
     activities
@@ -464,7 +471,6 @@ async function onProjectChange() {
 }
 
 function onActivityChange() {
-  markChosen(el('activity'));
   // A switch the user already flipped stays where they put it.
   if (!billableTouched) {
     resetBillable();
@@ -512,13 +518,14 @@ function groupByDay(entries) {
 }
 
 function dayHeader(ofDay) {
-  const row = document.createElement('li');
+  const row = document.createElement('div');
   row.className = 'day';
 
   const name = document.createElement('span');
   name.textContent = dayName(ofDay[0].begin);
 
   const total = document.createElement('span');
+  total.className = 'sum';
   total.textContent = shortDuration(
     ofDay.reduce((sum, entry) => sum + (entry.duration || 0), 0),
   );
@@ -557,49 +564,114 @@ function clockOf(stamp) {
 }
 
 function recentRow(entry) {
-  const row = document.createElement('li');
+  const row = document.createElement('div');
+  row.className = 'entry';
 
   const dot = document.createElement('span');
   dot.className = 'dot';
   dot.style.background = entry.project?.color || 'var(--muted)';
 
   const body = document.createElement('div');
-  body.className = 'entry';
-  const title = document.createElement('span');
-  title.className = 'title truncate';
-  // Descriptions copied out of Trello or Slack carry line breaks; on one line
-  // they would swallow the rest of the text.
-  title.textContent = (entry.description || '').replace(/\s+/g, ' ').trim() || t('noDescription');
-  title.title = entry.description || '';
-  const where = document.createElement('span');
-  where.className = 'where truncate';
-  if (entry.billable === false) {
-    const badge = document.createElement('span');
-    badge.className = 'unbilled';
-    badge.textContent = t('billableShortOff');
-    where.append(badge);
-  }
-  where.append([entry.project?.name, entry.activity?.name].filter(Boolean).join(' - '));
-  body.append(title, where);
+  const desc = document.createElement('div');
+  desc.className = 'desc';
+  // Descriptions copied out of Trello or Slack carry line breaks. The clamp to
+  // two lines is done in CSS, so the text itself only loses its own newlines.
+  const text = (entry.description || '').replace(/\s+/g, ' ').trim();
+  desc.textContent = text || t('noDescription');
+  desc.classList.toggle('empty', !text);
+  desc.title = entry.description || '';
 
-  const when = document.createElement('span');
-  when.className = 'when';
-  const length = document.createElement('b');
+  const meta = document.createElement('div');
+  meta.className = 'meta';
+  const name = document.createElement('span');
+  name.className = 'name';
+  name.textContent = [entry.project?.name, entry.activity?.name].filter(Boolean).join(' - ');
+  meta.append(name);
+  body.append(desc, meta);
+
+  const when = document.createElement('div');
+  when.className = 'num';
+  const length = document.createElement('span');
+  length.className = 'dur';
   length.textContent = shortDuration(entry.duration);
   const span = document.createElement('span');
+  span.className = 'span';
   span.textContent = `${clockOf(entry.begin)}-${clockOf(entry.end)}`;
   when.append(length, span);
 
   const play = document.createElement('button');
   play.type = 'button';
-  play.className = 'play';
+  play.className = 'resume';
   play.title = t('resume');
-  play.innerHTML = '<svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true">' +
-    '<path fill="currentColor" d="M8 5v14l11-7z"/></svg>';
+  play.setAttribute('aria-label', t('resume'));
+  play.innerHTML = '<svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor"'
+    + ' aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>';
   play.addEventListener('click', () => resume(entry));
 
-  row.append(dot, body, when, play);
+  row.append(dot, body, when, billableButton(entry), play);
   return row;
+}
+
+/**
+ * Per-entry billable switch.
+ *
+ * Correcting how an entry was billed used to mean opening Kimai, so it is the one
+ * edit the list offers. The click paints the new state immediately and reverts it
+ * if Kimai says no - a round trip of a few hundred milliseconds is long enough for
+ * a second click to land on a button that still shows the old state.
+ */
+function billableButton(entry) {
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'bill-mini';
+  button.innerHTML = moneyIcon(13);
+  button.disabled = !billableAllowed;
+  paintBillableButton(button, entry.billable !== false);
+
+  button.addEventListener('click', async () => {
+    if (button.classList.contains('pending') || button.disabled) {
+      return;
+    }
+    const wanted = entry.billable === false;
+    button.classList.add('pending');
+    paintBillableButton(button, wanted);
+    showError('');
+    try {
+      await api.update(settings, entry.id, { billable: wanted });
+      entry.billable = wanted;
+      flash(t('savedBillable'));
+    } catch (error) {
+      paintBillableButton(button, !wanted);
+      if (isBillableRejected(error)) {
+        await lockBillable();
+        return showError(t('errBillableDenied'));
+      }
+      showError(describeError(error));
+    } finally {
+      button.classList.remove('pending');
+    }
+  });
+
+  return button;
+}
+
+function paintBillableButton(button, on) {
+  const label = billableAllowed
+    ? (on ? t('billableRowOn') : t('billableRowOff'))
+    : t('billableLocked');
+  button.classList.toggle('off', !on);
+  button.setAttribute('aria-pressed', String(on));
+  button.setAttribute('aria-label', label);
+  button.title = label;
+}
+
+/** Kimai turned the flag down once, so the whole list stops offering it. */
+function lockRecentBillables() {
+  el('recent').querySelectorAll('.bill-mini').forEach((button) => {
+    button.disabled = true;
+    button.title = t('billableLocked');
+    button.setAttribute('aria-label', t('billableLocked'));
+  });
 }
 
 /**
@@ -646,7 +718,6 @@ async function resume(entry) {
     // A hidden activity (the Toggl import bucket) is absent here on purpose.
     if (entry.activity?.id && activity.querySelector(`option[value="${entry.activity.id}"]`)) {
       activity.value = String(entry.activity.id);
-      markChosen(activity);
     }
   }
 

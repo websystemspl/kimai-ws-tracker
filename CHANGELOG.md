@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.5.1
+
+English is now the default locale, so the store listing and the browser read English for
+anyone whose language is not Polish. The Polish texts stay and are still served to Polish
+browsers. The language of the add-on window itself is unaffected: it is picked in the
+settings and defaults to the browser.
+
 ## 1.5.0
 
 Window widened to 460 px, because longer descriptions were costing too much scrolling.

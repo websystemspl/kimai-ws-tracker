@@ -41,7 +41,7 @@ async function refresh() {
     const minutes = Math.max(0, Math.floor((Date.now() - started) / 60000));
     const label = minutes < 60
       ? `${minutes}m`
-      : `${Math.floor(minutes / 60)}h${String(minutes % 60).padStart(2, '0')}`;
+      : `${Math.floor(minutes / 60)}:${String(minutes % 60).padStart(2, '0')}`;
     return setBadge(label, '#16a34a');
   } catch {
     return setBadge('!', '#dc2626');

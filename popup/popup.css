@@ -51,7 +51,7 @@
 [hidden] { display: none !important; }
 
 body {
-  width: 400px;
+  width: 460px;
   max-height: 600px;
   margin: 0;
   overflow: hidden;
@@ -96,6 +96,8 @@ body {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+.today.week { color: var(--muted); opacity: .8; }
 
 .icon-btn {
   flex: none;
@@ -181,17 +183,14 @@ body {
 .toggle.stop .icon-start { display: none; }
 
 .row-project {
-  display: grid;
-  grid-template-columns: 9px 1fr;
-  gap: var(--sp-2);
-  align-items: center;
+  position: relative;
 }
 
-/* The dot is hidden until a project is picked, and [hidden] takes it out of the
-   grid entirely - without explicit placement the select would slide into the 9px
-   column and collapse. */
-.row-project > .dot { grid-column: 1; }
-.row-project > select { grid-column: 2; }
+/* The dot is laid over the select instead of sitting in its own column, where it
+   read as misaligned against the row below. Absolute keeps it out of the flow, so
+   the select stays exactly as wide as the one under it. */
+.row-project .dot { position: absolute; left: 11px; top: 50%; margin-top: -4.5px; pointer-events: none; }
+#project { padding-left: 27px; }
 
 .dot {
   width: 9px;

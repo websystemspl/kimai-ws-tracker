@@ -22,8 +22,9 @@ let billableTouched = false;
 // Kimai hands the billable field only to accounts allowed to edit it. Once it has
 // turned a request down, the switch is locked and the entry is left to Kimai.
 let billableAllowed = true;
-// Seconds already booked today by finished entries; the running one is added live.
+// Seconds already booked by finished entries; the running one is added live.
 let todaySeconds = 0;
+let weekSeconds = 0;
 let savedTimer = null;
 let descriptionTimer = null;
 // Locale segment of the Kimai URL, needed for the "all my entries" link.
@@ -149,7 +150,7 @@ async function render() {
     await fillPickers();
     running ? enterRunningState() : await enterIdleState();
     await renderRecent();
-    await renderToday();
+    await renderTotals();
   } catch (error) {
     show('tracker');
     showError(describeError(error));
@@ -167,9 +168,7 @@ function enterRunningState() {
   el('project').disabled = true;
   el('activity').disabled = true;
 
-  const dot = el('dot');
-  dot.hidden = false;
-  dot.style.background = running.project?.color || 'var(--muted)';
+  paintProjectDot(running.project?.color);
 
   const toggle = el('toggle');
   toggle.classList.replace('start', 'stop');
@@ -195,7 +194,7 @@ async function enterIdleState() {
 
   el('project').disabled = false;
   el('activity').disabled = false;
-  el('dot').hidden = true;
+  paintProjectDot();
   el('clock').hidden = true;
 
   // While an entry runs, the activity picker only holds the label of that entry.
@@ -257,24 +256,60 @@ async function onBeginChange() {
   }
 }
 
-async function renderToday() {
+async function renderTotals() {
   try {
-    const entries = await api.today(settings);
-    // A running entry is reported with duration 0, its time is added by the clock.
-    todaySeconds = entries.reduce((sum, entry) => sum + (entry.duration || 0), 0);
-    paintToday();
+    // One window covers both totals: the week contains today, so asking twice
+    // would only be a second round trip for numbers already in hand.
+    const entries = await api.range(settings, startOfWeek(), endOfToday());
+    const today = new Date().toDateString();
+    // Only closed entries are counted here; the running one is added live by the
+    // clock. Dropping it by hand rather than trusting it to arrive with duration 0
+    // keeps the total right whatever Kimai reports for an entry still going.
+    const finished = entries.filter((entry) => entry.end);
+    const seconds = (list) => list.reduce((sum, entry) => sum + (entry.duration || 0), 0);
+    weekSeconds = seconds(finished);
+    todaySeconds = seconds(
+      finished.filter((entry) => new Date(entry.begin).toDateString() === today),
+    );
+    paintTotals();
   } catch {
     el('today').hidden = true;
+    el('week').hidden = true;
   }
 }
 
-function paintToday() {
+/** Monday 00:00 of the current week. */
+function startOfWeek() {
+  const monday = new Date();
+  monday.setHours(0, 0, 0, 0);
+  // getDay() calls Sunday 0, and Sunday closes the week that began six days back.
+  monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+  return monday;
+}
+
+function endOfToday() {
+  const midnight = new Date();
+  midnight.setHours(23, 59, 59, 0);
+  return midnight;
+}
+
+/**
+ * The dot sits inside the project select rather than in a column beside it, so
+ * it is always on screen - grey while nothing is picked, the project colour once
+ * something is.
+ */
+function paintProjectDot(color) {
+  el('dot').style.background = color || 'var(--line)';
+}
+
+function paintTotals() {
   const live = running
     ? Math.max(0, Math.floor((Date.now() - new Date(running.begin).getTime()) / 1000))
     : 0;
-  const total = todaySeconds + live;
-  el('today').textContent = t('todayTotal', `${Math.floor(total / 3600)}:${pad(Math.floor(total / 60) % 60)}`);
+  el('today').textContent = t('todayTotal', shortDuration(todaySeconds + live));
   el('today').hidden = false;
+  el('week').textContent = t('weekTotal', shortDuration(weekSeconds + live));
+  el('week').hidden = false;
 }
 
 // --- billable switch -------------------------------------------------------
@@ -373,7 +408,7 @@ function startClock(startedAt) {
   const tick = () => {
     const s = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
     el('clock').textContent = `${Math.floor(s / 3600)}:${pad(Math.floor(s / 60) % 60)}:${pad(s % 60)}`;
-    paintToday();
+    paintTotals();
   };
   tick();
   clockTimer = setInterval(tick, 1000);
@@ -449,9 +484,7 @@ async function restoreLastActivity() {
 async function onProjectChange() {
   const select = el('project');
   const chosen = select.selectedOptions[0];
-  const dot = el('dot');
-  dot.hidden = !select.value;
-  dot.style.background = chosen?.dataset.color || 'var(--muted)';
+  paintProjectDot(chosen?.dataset.color);
 
   const activity = el('activity');
   activity.replaceChildren(new Option(t('chooseActivity'), ''));
@@ -704,7 +737,7 @@ async function resume(entry) {
     }
     running = null;
     await enterIdleState();
-    await renderToday();
+    await renderTotals();
   }
 
   el('description').value = entry.description || '';

@@ -184,6 +184,14 @@
       }
     }
   },
+  "weekTotal": {
+    "message": "Week $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "fromLabel": {
     "message": "from"
   },

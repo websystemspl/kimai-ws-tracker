@@ -184,6 +184,14 @@
       }
     }
   },
+  "weekTotal": {
+    "message": "Tydz. $TIME$",
+    "placeholders": {
+      "time": {
+        "content": "$1"
+      }
+    }
+  },
   "fromLabel": {
     "message": "od"
   },

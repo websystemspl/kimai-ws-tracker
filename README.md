@@ -162,6 +162,15 @@ plakietki z czasem). Żadnych innych uprawnień, żadnej telemetrii.
 
 ## Historia zmian
 
+- **1.5.0** - uwagi zespołu ze Slacka. Okno szersze, 460 px zamiast 400, bo przy
+  dłuższych opisach za dużo trzeba było przewijać. Kolorowa kropka projektu przesunięta
+  do środka pola wyboru - stała obok, w osobnej kolumnie, i wyglądała krzywo względem
+  wiersza niżej. W nagłówku doszła suma tygodnia obok sumy dnia, liczona od poniedziałku.
+  Plakietka na ikonie pokazuje `1:22` zamiast `1h22`, bo przy pięciu znakach Chrome
+  ucinał tekst. Sumy liczone są wyłącznie z zamkniętych wpisów, a czas trwającego
+  dolicza zegar - wcześniej opierało się to na założeniu, że Kimai raportuje biegnący
+  wpis z zerowym czasem trwania.
+
 - **1.4.0** - nowy układ okna. Szerokość 400 px zamiast 360, jedna skala odstępów,
   opisy w liście łamane na dwie linie zamiast ucinane po jednej (wpisy wklejane
   z Trello różnią się dopiero w połowie zdania), nagłówki dni przyklejone przy
